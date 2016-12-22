@@ -171,4 +171,6 @@ Regex_Objectify(Needle){
 ;---------------------------
 ;OK   
 ;---------------------------
+;Command:
+;Autohotkey.exe "C:\Users\jwa\Desktop\TestRegexEngine.ahk" "RegexMatch" "A" "A" "B" "i)\w+(\d*)" 1 1
 
