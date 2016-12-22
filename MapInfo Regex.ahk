@@ -164,22 +164,11 @@ Regex_Objectify(Needle){
 }
 
 
-; ---------------------------
-; TestRegexEngine.ahk
-; ---------------------------
-; Error:  Return's parameter should be blank except inside a function.
+;---------------------------
+;TestRegexEngine.ahk
+;---------------------------
+;Command not found: "RegexMatch". RegexMatch = ""
+;---------------------------
+;OK   
+;---------------------------
 
-	; Line#
-	; 142: Return,MI
-	; 143: }
-	; 145: {
-	; 147: datapart := oMatch.Value(0)
-	; 150: Loop,oMatch.Count()
-	; 151: datapart := datapart ";" oMatch.Value(A_Index)
-	; 152: }
-; --->	153: Return,datapart
-
-; The program will exit.
-; ---------------------------
-; OK   
-; ---------------------------
