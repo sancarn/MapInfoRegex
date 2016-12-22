@@ -21,7 +21,7 @@ If (Operation ~= "i)Regex\s*Match") {
 	MapInfo_Test()
 
 } else {
-	Msgbox, Command not found: "%1%"
+	Msgbox, Command not found: "%1%". %1% = "%Operation%"
 }
 
 ;Extra functionality for scripters, resume MapBasic Window runtime.
@@ -148,6 +148,7 @@ Regex_RetAllSubPatterns(oMatch){
 
 	;Loop over and combine all Sub-Patterns
 	Loop, % oMatch.Count()
+	{
 		datapart := datapart ";" oMatch.Value(A_Index)
 	}
 	return datapart
@@ -155,9 +156,30 @@ Regex_RetAllSubPatterns(oMatch){
 
 Regex_Objectify(Needle){
 	RegexMatch(Needle, "((?:i|m|s|x|A|D|J|U|X|P|S|C|O|`n|`r|`a)+?)\)", Match)
-	If Not Match1 ~= ".*O.*" {
-		return "O" Needle
-	} else if Match1 = "" {
-		return "O)" Needle
+	If Not (Match1 ~= ".*O.*") {
+		return, "O" . Needle
+	} else if (Match1 = "") {
+		return, "O)" . Needle
 	}
 }
+
+
+; ---------------------------
+; TestRegexEngine.ahk
+; ---------------------------
+; Error:  Return's parameter should be blank except inside a function.
+
+	; Line#
+	; 142: Return,MI
+	; 143: }
+	; 145: {
+	; 147: datapart := oMatch.Value(0)
+	; 150: Loop,oMatch.Count()
+	; 151: datapart := datapart ";" oMatch.Value(A_Index)
+	; 152: }
+; --->	153: Return,datapart
+
+; The program will exit.
+; ---------------------------
+; OK   
+; ---------------------------
