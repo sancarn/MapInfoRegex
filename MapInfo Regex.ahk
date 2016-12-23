@@ -1,4 +1,4 @@
-﻿Operation = %1%
+Operation = %1%
 
 ;Extra functionality for scripters, pause MapBasic Window runtime.
 If (A_ScriptName ~= "MBWnd") {
@@ -162,15 +162,3 @@ Regex_Objectify(Needle){
 		return, "O)" . Needle
 	}
 }
-
-
-;---------------------------
-;TestRegexEngine.ahk
-;---------------------------
-;Command not found: "RegexMatch". RegexMatch = ""
-;---------------------------
-;OK   
-;---------------------------
-;Command:
-;Autohotkey.exe "C:\Users\jwa\Desktop\TestRegexEngine.ahk" "RegexMatch" "A" "A" "B" "i)\w+(\d*)" 1 1
-
