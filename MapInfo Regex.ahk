@@ -1,4 +1,10 @@
-Operation = %1%
+;Get params into array p
+p := []
+Loop, %0%
+{
+    var = %A_Index%
+    p.push(var)
+}
 
 ;Extra functionality for scripters, pause MapBasic Window runtime.
 If (A_ScriptName ~= "MBWnd") {
@@ -7,7 +13,8 @@ If (A_ScriptName ~= "MBWnd") {
 	MI.Do("Note ""Please wait while RegEx executes..."" ")
 }
 
-If (Operation ~= "i)Regex\s*Match") {
+;Switch
+If (p[0] ~= "i)Regex\s*Match") {
 	;
 	;TableName	:= %2%
 	;InputColumn	:= %3%
@@ -15,9 +22,9 @@ If (Operation ~= "i)Regex\s*Match") {
 	;Needle		:= %5%
 	;MatchNum	:= %6%
 	;Count		:= %7%
-	MapInfo_RegexMatch(%2%,%3%,%4%,%5%,%6%,%7%)
+	MapInfo_RegexMatch(p[1],p[2],p[3],p[4],p[5],p[6])
 
-} else if (Operation ~= "i)Test\s*Extract") {
+} else if (p[0] ~= "i)Test\s*Extract") {
 	MapInfo_Test()
 
 } else {
