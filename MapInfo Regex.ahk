@@ -1,34 +1,64 @@
-﻿Operation = %1%
-
-;Extra functionality for scripters, pause MapBasic Window runtime.
-If (A_ScriptName ~= "MBWnd") {
-	;Get MapInfo Application
-	MI := MapInfo_GetApp()
-	MI.Do("Note ""Please wait while RegEx executes..."" ")
+;Get all parameters
+p := []
+Loop, %0%
+{
+	_p = %A_Index%
+	p.Push(_p)
 }
 
-If (Operation ~= "i)Regex\s*Match") {
-	;
-	;TableName	:= %2%
-	;InputColumn	:= %3%
-	;OutputColumn	:= %4%
-	;Needle		:= %5%
-	;MatchNum	:= %6%
-	;Count		:= %7%
-	MapInfo_RegexMatch(%2%,%3%,%4%,%5%,%6%,%7%)
+;		;Extra functionality for scripters, pause MapBasic Window runtime.
+;		If (A_ScriptName ~= "MBWnd") {
+;			;Get MapInfo Application
+;			MI := MapInfo_GetApp()
+;			MI.Do("Note ""Please wait while RegEx executes..."" ")
+;		}
 
-} else if (Operation ~= "i)Test\s*Extract") {
+;TODO:
+;Params IDEA: TableName,InputColumn,OutputColumn, Needle, NeedleOptions , ....
+
+;Regex Match		;MapInfo_RegexMatch(TableName,InputColumn,OutputColumn,Needle,MatchNum,Count)
+If (p[0] ~= "i)(?:Regex\s*Match|m)") {
+	MapInfo_RegexMatch(p[1],p[2],p[3],p[4],p[5],p[6])
+
+;Regex Replace	;MapInfo_RegexReplace(TableName,InputColumn,OutputColumn,Needle,sReplace)
+} else if (p[0] ~= "i)(?:regex\s*replace|r)") {
+	MapInfo_RegexReplace(p[1],p[2],p[3],p[4],p[5])
+
+;Regex Format		;MapInfo_RegexFormat(TableName,InputColumn,OutputColumn,Needle,sFormat, StartingPositionColumn)
+} else if (p[0] ~= "i)(?:(regex)?\s*format|f)") {
+	MapInfo_RegexFormat(p[1],p[2],p[3],p[4],p[5])
+
+;Return the count of the occurrencees of a given pattern in a string.
+;Regex Count		;MapInfo_RegexCount(TableName,InputColumn,OutputColumn,Needle)
+} else if (p[0] ~= "i)(?:(regex)?\s*(get\s*)?c(ou)?nt|c)") {
+	MapInfo_RegexCount(p[1],p[2],p[3],p[4])
+
+;Return Pos of found pattern. To find the position of the nth pattern use iPatternNumber = n / ColumnName
+;Regex Pos		;MapInfo_RegexPosition(TableName, InputColumn, OutputColumn, Needle, iPatternNumber=1)
+} else if (p[0] ~= "i)(?:(regex)?\s*(get\s*)?pos(ition)?|p)") {
+	MapInfo_RegexPosition(p[1],p[2],p[3],p[4],p[5])
+
+;Test data extraction
+} else if (p[0] ~= "i)(?:test|t)") {
 	MapInfo_Test()
 
+;Help - Command Reference
+} else if (p[0] ~= "i)(?:help|h|\?)") {
+	Msgbox, Help! I need assistance!
+
 } else {
-	Msgbox, Command not found: "%1%". %1% = "%Operation%"
+	Msgbox, % "Unknown command: " . StrJoin(p,",")
 }
 
-;Extra functionality for scripters, resume MapBasic Window runtime.
-If (A_ScriptName ~= "MBWnd") {
-	WinClose, WinTitle, WinText
-}
+;		;Extra functionality for scripters, resume MapBasic Window runtime.
+;		If (A_ScriptName ~= "MBWnd") {
+;			WinClose, WinTitle, WinText
+;		}
 ExitApp
+
+;*******************************************************************************
+;*                           MAPINFO BASE FUNCTIONS                            *
+;*******************************************************************************
 
 MapInfo_RegexMatch(TableName,InputColumn,OutputColumn,Needle,MatchNum,Count){
 	;Get input data
@@ -41,6 +71,49 @@ MapInfo_RegexMatch(TableName,InputColumn,OutputColumn,Needle,MatchNum,Count){
 	MapInfo_SetData(TableName, OutputColumn, data)
 }
 
+MapInfo_RegexReplace(TableName,InputColumn,OutputColumn,Needle,sReplace){
+	;Get input data
+	data := MapInfo_GetData(TableName,InputColumn)
+
+	;Regex Match
+	Array_RegexReplace(data, Needle, sReplace)
+
+	;Set output data
+	MapInfo_SetData(TableName, OutputColumn, data)
+}
+
+MapInfo_RegexFormat(TableName,InputColumn,OutputColumn,Needle,sFormat){
+	;Get input data
+	data := MapInfo_GetData(TableName,InputColumn)
+
+	;Regex Match
+	Array_RegexFormat(data, Needle, sFormat)
+
+	;Set output data
+	MapInfo_SetData(TableName, OutputColumn, data)
+}
+
+MapInfo_RegexCount(TableName,InputColumn,OutputColumn,Needle){
+	;Get input data
+	data := MapInfo_GetData(TableName,InputColumn)
+
+	;Regex Match
+	Array_RegexCount(data, Needle)
+
+	;Set output data
+	MapInfo_SetData(TableName, OutputColumn, data)
+}
+
+MapInfo_RegexPos(TableName,InputColumn,OutputColumn,Needle,iPatternNumber=1){
+	;Get input data
+	data := MapInfo_GetData(TableName,InputColumn)
+
+	;Regex Match
+	Array_RegexPos(data, Needle, iPatternNumber)
+
+	;Set output data
+	MapInfo_SetData(TableName, OutputColumn, data)
+}
 
 MapInfo_Test(){
 	;Get MapInfo Application
@@ -61,7 +134,11 @@ MapInfo_Test(){
 	}
 }
 
-Array_RegexMatch(data, Needle, MatchNum, Count){
+;*******************************************************************************
+;*                               ARRAY FUNCTIONS                               *
+;*******************************************************************************
+
+Array_RegexMatch(byref data, Needle, MatchNum, Count){
 	;Add "O" to Needle
 	Needle := Regex_Objectify(Needle)
 
@@ -94,9 +171,92 @@ Array_RegexMatch(data, Needle, MatchNum, Count){
 	}
 }
 
-;******************************************************;
-;***************** HELPER FUNCTIONS *******************;
-;******************************************************;
+Array_RegexReplace(byref data, Needle, sReplace){
+	;Add "O" to Needle
+	Needle := Regex_Objectify(Needle)
+
+	;Loop through all element in array
+	Loop, % data.Length()
+	{
+		data[A_Index] := RegExReplace(data[A_Index],Needle, sReplace)
+	}
+}
+
+Array_RegexFormat(byref data, Needle, sFormat){
+	;Rearranges match/subpatterns into new format. E.G.
+	;data := ["abc123","def456","ghi789"]
+	;Array_RegexFormat(data,"\w\w\w(\d\d\d)","Suffix: \1")
+	;--> data == ["123","456","789"]
+
+	;data := ["abc123","def456","ghi789"]
+	;Array_RegexFormat(data,"(\w\w\w)(\d\d\d)","\2\1")
+	;--> data == ["123abc","456def","789ghi"]
+
+	;Add "O" to Needle
+	Needle := Regex_Objectify(Needle)
+
+	;Loop through all element in array
+	Loop, % data.Length()
+	{
+		;Set ID for later use in next nested loop
+		ID := A_Index
+
+		;Get the match from the needle
+		i := RegexMatch(data[A_Index],Needle, oMatch,1)
+
+		;Replace full pattern and all other subpatterns.
+		Loop, % oMatch.Count() + 1
+		{
+			;Recall, Loop starts at 1
+			index := A_Index -1
+			StringReplace, data[ID], data[ID], "\" . index , oMatch.Value(index)
+		}
+	}
+}
+
+Array_RegexCount(byref data, Needle){
+	;Add "O" to Needle
+	Needle := Regex_Objectify(Needle)
+
+	;Loop through all element in array
+	Loop, % data.Length()
+	{
+		a := RegExReplace(data[A_Index],Needle, "", count)
+		data[A_Index] := count
+	}
+}
+
+Array_RegexPos(byref data, Needle, iPatternNumber){
+	;Add "O" to Needle
+	Needle := Regex_Objectify(Needle)
+
+	;Loop through all element in array
+	Loop, % data.Length()
+	{
+		i := 1
+		count := 1
+		while i<>0 {
+			;find potential "Pos"
+			i := RegexMatch(data[A_Index],Needle, oMatch,i)
+
+			if (iPatternNumber = count){
+				data[A_Index] := i
+				GoTo NextArrayElement  ;break?
+			}
+
+			;Setup i for next pattern
+			i := oMatch.Pos(0) + oMatch.Len(0)
+
+			;Increment count
+			count := count + 1
+		}
+NextArrayElement:
+	}
+}
+
+;*******************************************************************************
+;*                              HELPER FUNCTIONS                               *
+;*******************************************************************************
 
 MapInfo_GetData(TableName, ColumnName){
 	MI := MapInfo_GetApp()
@@ -169,8 +329,7 @@ Regex_Objectify(Needle){
 ;---------------------------
 ;Command not found: "RegexMatch". RegexMatch = ""
 ;---------------------------
-;OK   
+;OK
 ;---------------------------
 ;Command:
 ;Autohotkey.exe "C:\Users\jwa\Desktop\TestRegexEngine.ahk" "RegexMatch" "A" "A" "B" "i)\w+(\d*)" 1 1
-
