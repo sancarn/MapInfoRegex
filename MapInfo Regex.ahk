@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ;FEATURES:
 ;Regular Expressions support for MapInfo!
 ;Support brought for the following functions:
@@ -86,6 +87,35 @@ If (p[0] ~= "i)(?:(regex)?\s*match|m)") {
 
 ;Test data extraction
 } else if (p[0] ~= "i)(?:test|t)") {
+=======
+;Get params into array p
+p := []
+Loop, %0%
+{
+    var = %A_Index%
+    p.push(var)
+}
+
+;Extra functionality for scripters, pause MapBasic Window runtime.
+If (A_ScriptName ~= "MBWnd") {
+	;Get MapInfo Application
+	MI := MapInfo_GetApp()
+	MI.Do("Note ""Please wait while RegEx executes..."" ")
+}
+
+;Switch
+If (p[0] ~= "i)Regex\s*Match") {
+	;
+	;TableName	:= %2%
+	;InputColumn	:= %3%
+	;OutputColumn	:= %4%
+	;Needle		:= %5%
+	;MatchNum	:= %6%
+	;Count		:= %7%
+	MapInfo_RegexMatch(p[1],p[2],p[3],p[4],p[5],p[6])
+
+} else if (p[0] ~= "i)Test\s*Extract") {
+>>>>>>> origin/master
 	MapInfo_Test()
 
 ;Help - Command Reference
@@ -383,6 +413,7 @@ Regex_Objectify(Needle){
 		return, "O)" . Needle
 	}
 }
+<<<<<<< HEAD
 
 
 ;---------------------------
@@ -394,3 +425,5 @@ Regex_Objectify(Needle){
 ;---------------------------
 ;Command:
 ;Autohotkey.exe "C:\Users\jwa\Desktop\TestRegexEngine.ahk" "RegexMatch" "A" "A" "B" "i)\w+(\d*)" 1 1
+=======
+>>>>>>> origin/master
