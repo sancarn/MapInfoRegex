@@ -1,3 +1,49 @@
+;FEATURES:
+;Regular Expressions support for MapInfo!
+;Support brought for the following functions:
+;  Regex Match     - Pattern found; Data to chosen column
+;  Regex Replace   - Pattern found; Patterns replaced; Data to chosen column
+;  Regex Format    - Pattern and subpatterns found; Reformated with \1 \2 \3 ...; Data to chosen column
+;  Regex Count		 - Pattern counted. Count returned to chosen column.
+;  Regex Position	 - Pattern found. Position returned to chosen column
+;
+;SYNTAX OVERVIEW:
+;  Regex Match:
+;    CMD: MI_RegexEngine.exe "Alias" "TableName" "InputColumn" "OutputColumn" "Needle" "MatchNum" "Count"
+;      Alias: "Regex Match", "RegexMatch", "Match", "M" - CASE INSENSITIVE
+;      MatchNum: 1, 2, 3, ... or *
+;      Count: 1, 2, 3, ... or *
+;
+;    Description:
+;      Regex Match reads all data from the column <InputColumn> of table <TableName>,
+;      uses RegEx to find the needle specified, and returns the found data to the
+;      column <OutputColumn> of table <TableName>.
+;
+;      If Count = 1 then the 1st match will be returned
+;      If Count = 2 then the 2nd match will be returned
+;      If Count = * then     all matches will be returned seperated by a |
+;
+;      If MatchNum = 0 then the whole pattern is returned
+;      If MatchNum = 1 then the 1st captured subpatterns is returned
+;      If MatchNum = 2 then the 2nd captured subpatterns is returned
+;      If MatchNum = * then the whole pattern and all captured subpatterns
+;      are returned seperated by ";"
+;
+;  Regex Replace:
+;    CMD: MI_RegexEngine.exe "Alias" "TableName" "InputColumn" "OutputColumn" "Needle" "Replacement"
+;      Alias: "Regex Replace", "RegexReplace", "Replace", "M" - CASE INSENSITIVE
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+
 ;Get all parameters
 p := []
 Loop, %0%
@@ -17,11 +63,11 @@ Loop, %0%
 ;Params IDEA: TableName,InputColumn,OutputColumn, Needle, NeedleOptions , ....
 
 ;Regex Match		;MapInfo_RegexMatch(TableName,InputColumn,OutputColumn,Needle,MatchNum,Count)
-If (p[0] ~= "i)(?:Regex\s*Match|m)") {
+If (p[0] ~= "i)(?:(regex)?\s*match|m)") {
 	MapInfo_RegexMatch(p[1],p[2],p[3],p[4],p[5],p[6])
 
 ;Regex Replace	;MapInfo_RegexReplace(TableName,InputColumn,OutputColumn,Needle,sReplace)
-} else if (p[0] ~= "i)(?:regex\s*replace|r)") {
+} else if (p[0] ~= "i)(?:(regex)?\s*replace|r)") {
 	MapInfo_RegexReplace(p[1],p[2],p[3],p[4],p[5])
 
 ;Regex Format		;MapInfo_RegexFormat(TableName,InputColumn,OutputColumn,Needle,sFormat, StartingPositionColumn)
@@ -150,19 +196,19 @@ Array_RegexMatch(byref data, Needle, MatchNum, Count){
 			i := RegexMatch(data[A_Index],Needle, oMatch,i)
 			i := oMatch.Pos(0) + oMatch.Len(0)
 
-			If (curCount = Count) {
+			If (A_Index = Count) {
 				;If MatchNum = "*" return all extracted subpatterns
 				If (MatchNum = "*"){
 					datapart := Regex_RetAllSubPatterns(oMatch)
 				} else {
-					datapart := oMatch.Value(MatchNum -1)
+					datapart := oMatch.Value(MatchNum)
 				}
 				GoTo, NextArrayElement
 			} else if (Count = "*") {
 				If (MatchNum = "*"){
 					datapart := datapart "|" Regex_RetAllSubPatterns(oMatch)
 				} else {
-					datapart := datapart "|" oMatch.Value(MatchNum -1)
+					datapart := datapart "|" oMatch.Value(MatchNum)
 				}
 			}
 		}
@@ -275,11 +321,26 @@ MapInfo_GetData(TableName, ColumnName){
 
 MapInfo_SetData(TableName, ColumnName, data){
 	MI := MapInfo_GetApp()
-	iNumRows := MI.Eval("TableInfo(" TableName ",8)")
-	Loop, %iNumRows%
-	{
-		thisData := data[A_Index -1]
-		MI.Do("Update " TableName " set " ColumnName " = """ thisData """ where rowid = " A_Index)
+	if (ColumnName ~= "i)\$(msg|message)"){
+		;Clear message window
+		MI.Do("Print chr$(12)")
+
+		;Loop through data range and print data
+		Loop, % data.Length()
+		{
+			MI.Do("Print """ data[A_Index] """")
+		}
+
+	} else {
+		;Get number of rows of table
+		iNumRows := MI.Eval("TableInfo(" TableName ",8)")
+
+		;Loop through all rows and set values
+		Loop, %iNumRows%
+		{
+			thisData := data[A_Index -1]
+			MI.Do("Update " TableName " set " ColumnName " = """ thisData """ where rowid = " A_Index)
+		}
 	}
 }
 
