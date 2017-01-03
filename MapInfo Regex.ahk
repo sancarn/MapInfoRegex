@@ -68,6 +68,10 @@
 ;      Alias: "Regex Position", "Position", "Pos", "P" (OTHERS: "(?:(regex)?\s*(get\s*)?pos(ition)?|p)")
 ;      N: Default = 1
 ;
+;Regex Options:
+;
+;  See table of: https://autohotkey.com/docs/misc/RegEx-QuickRef.htm#Options
+;
 ;TODO:
 ;  Add default GUI.
 
