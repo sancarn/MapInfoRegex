@@ -76,12 +76,15 @@
 ;  Add default GUI.
 
 ;Get all parameters
-p := []
-Loop, %0%
-{
-	_p = %A_Index%
-	p.Push(_p)
-}
+;p := []
+;Loop, %0%
+;{
+;	_p = %A_Index%
+;	p.Push(_p)
+;}
+
+;Get all parameters
+p := GetParamArray()
 
 if p.length() = 0 {
 	;Open GUI app
@@ -100,33 +103,33 @@ if p.length() = 0 {
 ;Params IDEA: TableName,InputColumn,OutputColumn, Needle, NeedleOptions , ....
 
 ;Regex Match		;MapInfo_RegexMatch(TableName,InputColumn,OutputColumn,Needle,Options,MatchNum,Count)
-If (p[0] ~= "i)(?:(regex)?\s*match|m)") {
-	MapInfo_RegexMatch(p[1],p[2],p[3],p[4],p[5],p[6],p[7])
+If (p[1] ~= "i)(?:(regex)?\s*match|m)") {
+	MapInfo_RegexMatch(p[2],p[3],p[4],p[5],p[6],p[7],p[8])
 
 ;Regex Replace	;MapInfo_RegexReplace(TableName,InputColumn,OutputColumn,Needle,Options,sReplace)
-} else if (p[0] ~= "i)(?:(regex)?\s*replace|r)") {
-	MapInfo_RegexReplace(p[1],p[2],p[3],p[4],p[5],p[6])
+} else if (p[1] ~= "i)(?:(regex)?\s*replace|r)") {
+	MapInfo_RegexReplace(p[2],p[3],p[4],p[5],p[6],p[7])
 
 ;Regex Format		;MapInfo_RegexFormat(TableName,InputColumn,OutputColumn,Needle,Options,sFormat)
-} else if (p[0] ~= "i)(?:(regex)?\s*format|f)") {
-	MapInfo_RegexFormat(p[1],p[2],p[3],p[4],p[5],p[6])
+} else if (p[1] ~= "i)(?:(regex)?\s*format|f)") {
+	MapInfo_RegexFormat(p[2],p[3],p[4],p[5],p[6],p[7])
 
 ;Return the count of the occurrencees of a given pattern in a string.
 ;Regex Count		;MapInfo_RegexCount(TableName,InputColumn,OutputColumn,Needle,Options)
-} else if (p[0] ~= "i)(?:(regex)?\s*(get\s*)?c(ou)?nt|c)") {
-	MapInfo_RegexCount(p[1],p[2],p[3],p[4],p[5])
+} else if (p[1] ~= "i)(?:(regex)?\s*(get\s*)?c(ou)?nt|c)") {
+	MapInfo_RegexCount(p[2],p[3],p[4],p[5],p[6])
 
 ;Return Pos of found pattern. To find the position of the nth pattern use iPatternNumber = n / ColumnName
 ;Regex Pos		;MapInfo_RegexPosition(TableName, InputColumn, OutputColumn, Needle,Options,iPatternNumber=1)
-} else if (p[0] ~= "i)(?:(regex)?\s*(get\s*)?pos(ition)?|p)") {
-	MapInfo_RegexPos(p[1],p[2],p[3],p[4],p[5],p[6])
+} else if (p[1] ~= "i)(?:(regex)?\s*(get\s*)?pos(ition)?|p)") {
+	MapInfo_RegexPos(p[2],p[3],p[4],p[5],p[6],p[6])
 
 ;Test data extraction
-} else if (p[0] ~= "i)(?:test|t)") {
+} else if (p[1] ~= "i)(?:test|t)") {
 	MapInfo_Test()
 
 ;Help - Command Reference
-} else if (p[0] ~= "i)(?:help|h|\?)") {
+} else if (p[1] ~= "i)(?:help|h|\?)") {
 	Msgbox, Todo.
 
 } else {
@@ -391,19 +394,22 @@ MapInfo_SetData(TableName, ColumnName, data){
 
 MapInfo_GetApp(){
 	MI := []
+	
+	Try {
+		;Try to get MapInfo 64-bit
+		MI := ComObjActive("MapInfo.Application.x64")
+	} catch e {
 
-	;Try to get MapInfo 64-bit
-	MI := ComObjActive("MapInfo.Application.x64")
-
-	;If MI still nothing then get MapInfo 32-Bit
-	If (MI = []){
-		MI := ComObjActive("MapInfo.Application")
-	}
-
-	;If MI still nothing, exit app and error
-	If (MI = []){
-		Msgbox, MapInfo is not open. MapInfo must be open to use this utility.
-		ExitApp
+		Try {
+		
+			;If MI still nothing then get MapInfo 32-Bit
+			MI := ComObjActive("MapInfo.Application")
+			
+		} catch e {
+			Msgbox, MapInfo is not open. MapInfo must be open to use this utility.
+			ExitApp
+		}
+	
 	}
 	return MI
 }
@@ -425,6 +431,36 @@ StrJoin(obj,delimiter:="",OmitChars:=""){
 	Loop % obj.MaxIndex()-1
 		string .= delimiter Trim(obj[A_Index+1],OmitChars)
 	return string
+}
+
+;Get command line arguments function
+;By SKAN https://autohotkey.com/boards/viewtopic.php?t=4357
+
+Args( CmdLine := "", Skip := 0 ) {     ; By SKAN,  http://goo.gl/JfMNpN,  CD:23/Aug/2014 | MD:24/Aug/2014
+  Local pArgs := 0, nArgs := 0, A := []
+  
+  pArgs := DllCall( "Shell32\CommandLineToArgvW", "WStr",CmdLine, "PtrP",nArgs, "Ptr" ) 
+
+  Loop % ( nArgs ) 
+     If ( A_Index > Skip ) 
+       A[ A_Index - Skip ] := StrGet( NumGet( ( A_Index - 1 ) * A_PtrSize + pArgs ), "UTF-16" )  
+
+Return A,   A[0] := nArgs - Skip,   DllCall( "LocalFree", "Ptr",pArgs )  
+}
+
+;Wrapper for SKAN's command arguments function.
+GetParamArray(){
+
+	CmdLine := DllCall( "GetCommandLine", "Str" )
+	Skip    := ( A_IsCompiled ? 1 : 2 )
+	p	:= Args( CmdLine, Skip )
+	
+	return p
+}
+
+MsgIndex(arr, index){
+_ := arr[index]
+msgbox, %index%:%_%
 }
 
 ;DEPRECATED?
