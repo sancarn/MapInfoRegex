@@ -86,6 +86,7 @@ Loop, %0%
 if p.length() = 0 {
 	;Open GUI app
 	MsgBox, This is currently a command line tool only.
+	ExitApp
 }
 
 ;		;Extra functionality for scripters, pause MapBasic Window runtime.
@@ -178,7 +179,7 @@ MapInfo_RegexFormat(TableName,InputColumn,OutputColumn,Needle,Options,sFormat){
 	Needle := StrReplace(Options, "O") . ")" . Needle
 
 	;Regex Match   ;IMPORTANT: Array_RegexCount expects NON-object returning needle.
-	Array_RegexFormat(data, Needle, Options, sFormat)
+	Array_RegexFormat(data, Needle, sFormat)
 
 	;Set output data
 	MapInfo_SetData(TableName, OutputColumn, data)
@@ -253,7 +254,8 @@ Array_RegexMatch(byref data, Needle, MatchNum, Count){
 				} else {
 					datapart := oMatch.Value(MatchNum)
 				}
-				GoTo, NextArrayElement
+				
+				break ;GoTo, NextArrayElement
 			} else if (Count = "*") {
 				If (MatchNum = "*"){
 					datapart := datapart "|" Regex_RetAllSubPatterns(oMatch)
@@ -262,7 +264,7 @@ Array_RegexMatch(byref data, Needle, MatchNum, Count){
 				}
 			}
 		}
-	NextArrayElement:
+	;NextArrayElement:
 		data[A_Index] = datapart
 	}
 }
@@ -329,7 +331,8 @@ Array_RegexPos(byref data, Needle, iPatternNumber){
 
 			if (iPatternNumber = count){
 				data[A_Index] := i
-				GoTo NextArrayElement  ;break?
+				
+				break ;GoTo NextArrayElement2  ;break?
 			}
 
 			;Setup i for next pattern
@@ -338,7 +341,7 @@ Array_RegexPos(byref data, Needle, iPatternNumber){
 			;Increment count
 			count := count + 1
 		}
-NextArrayElement:
+;NextArrayElement2:
 	}
 }
 
@@ -415,6 +418,13 @@ Regex_RetAllSubPatterns(oMatch){
 		datapart := datapart ";" oMatch.Value(A_Index)
 	}
 	return datapart
+}
+
+StrJoin(obj,delimiter:="",OmitChars:=""){
+	string:=obj[1]
+	Loop % obj.MaxIndex()-1
+		string .= delimiter Trim(obj[A_Index+1],OmitChars)
+	return string
 }
 
 ;DEPRECATED?
