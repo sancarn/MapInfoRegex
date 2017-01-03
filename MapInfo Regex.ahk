@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 ;FEATURES:
 ;Regular Expressions support for MapInfo!
 ;Support brought for the following functions:
@@ -10,7 +9,7 @@
 ;
 ;SYNTAX OVERVIEW:
 ;  Regex Match:
-;    CMD: MI_RegexEngine.exe "Alias" "TableName" "InputColumn" "OutputColumn" "Needle" "MatchNum" "Count"
+;    CMD: MI_RegexEngine.exe "Alias" "TableName" "InputColumn" "OutputColumn" "Needle" "Options" "MatchNum" "Count"
 ;      Alias: "Regex Match", "RegexMatch", "Match", "M" - CASE INSENSITIVE
 ;      MatchNum: 1, 2, 3, ... or *
 ;      Count: 1, 2, 3, ... or *
@@ -31,19 +30,46 @@
 ;      are returned seperated by ";"
 ;
 ;  Regex Replace:
-;    CMD: MI_RegexEngine.exe "Alias" "TableName" "InputColumn" "OutputColumn" "Needle" "Replacement"
-;      Alias: "Regex Replace", "RegexReplace", "Replace", "M" - CASE INSENSITIVE
+;    CMD: MI_RegexEngine.exe "Alias" "TableName" "InputColumn" "OutputColumn" "Needle" "Options" "Replacement"
+;      Alias: "Regex Replace", "RegexReplace", "Replace", "R" - CASE INSENSITIVE
+;      Replacement - The string to be substituted for each match, which is plain text (not a regular
+;       expression). It may include backreferences like $1, which brings in the substring from Haystack
+;  		  that matched the first subpattern. The simplest backreferences are $0 through $9, where $0 is
+;  		  the substring that matched the entire pattern, $1 is the substring that matched the first subpattern,
+;  		  $2 is the second, and so on. For backreferences above 9 (and optionally those below 9), enclose the
+;  		  number in braces; e.g. ${10}, ${11}, and so on. For named subpatterns, enclose the name in braces;
+;  		  e.g. ${SubpatternName}. To specify a literal $, use $$ (this is the only character that needs such
+;  		  special treatment; backslashes are never needed to escape anything).
 ;
+;       To convert the case of a subpattern, follow the $ with one of the following characters: U or u (uppercase),
+;       L or l (lowercase), T or t (title case, in which the first letter of each word is capitalized but all others are
+;       made lowercase). For example, both $U1 and $U{1} transcribe an uppercase version of the first subpattern.
+
+;       Nonexistent backreferences and those that did not match anything in Haystack -- such as one of the
+;       subpatterns in "(abc)|(xyz)" -- are transcribed as empty strings.
 ;
+;  Regex Format:
+;    Description:
+;      Regex format takes the first match found given by needles and reformats it with the pattern specified
+;				by sFormat. sFormat follows the same rules as "Replacement" of RegexReplace above.
+;    CMD: MI_RegexEngine.exe "Alias" "TableName" "InputColumn" "OutputColumn" "Needle" "Options" "sFormat"
+;      Alias: "Regex Format", "RegexFormat", "Format", "F" - CASE INSENSITIVE
 ;
+;  Regex Count:
+;    Description:
+;      Regex Count counts and returns the number of occurrences of a pattern.
+;    CMD: MI_RegexEngine.exe "Alias" "TableName" "InputColumn" "OutputColumn" "Needle" "Options"
+;      Alias: "Regex Count", "Count", "Cnt", "C" (OTHERS: "(?:(regex)?\s*(get\s*)?c(ou)?nt|c)")
 ;
+;  Regex Position:
+;    Description:
+;      Regex Position returns the Nth position of a pattern.
+;    CMD: MI_RegexEngine.exe "Alias" "TableName" "InputColumn" "OutputColumn" "Needle" "Options" "N"
+;      Alias: "Regex Position", "Position", "Pos", "P" (OTHERS: "(?:(regex)?\s*(get\s*)?pos(ition)?|p)")
+;      N: Default = 1
 ;
-;
-;
-;
-;
-;
-;
+;TODO:
+;  Add default GUI.
 
 ;Get all parameters
 p := []
@@ -51,6 +77,11 @@ Loop, %0%
 {
 	_p = %A_Index%
 	p.Push(_p)
+}
+
+if p.length() = 0 {
+	;Open GUI app
+	MsgBox, This is currently a command line tool only.
 }
 
 ;		;Extra functionality for scripters, pause MapBasic Window runtime.
@@ -63,64 +94,35 @@ Loop, %0%
 ;TODO:
 ;Params IDEA: TableName,InputColumn,OutputColumn, Needle, NeedleOptions , ....
 
-;Regex Match		;MapInfo_RegexMatch(TableName,InputColumn,OutputColumn,Needle,MatchNum,Count)
+;Regex Match		;MapInfo_RegexMatch(TableName,InputColumn,OutputColumn,Needle,Options,MatchNum,Count)
 If (p[0] ~= "i)(?:(regex)?\s*match|m)") {
-	MapInfo_RegexMatch(p[1],p[2],p[3],p[4],p[5],p[6])
+	MapInfo_RegexMatch(p[1],p[2],p[3],p[4],p[5],p[6],p[7])
 
-;Regex Replace	;MapInfo_RegexReplace(TableName,InputColumn,OutputColumn,Needle,sReplace)
+;Regex Replace	;MapInfo_RegexReplace(TableName,InputColumn,OutputColumn,Needle,Options,sReplace)
 } else if (p[0] ~= "i)(?:(regex)?\s*replace|r)") {
-	MapInfo_RegexReplace(p[1],p[2],p[3],p[4],p[5])
+	MapInfo_RegexReplace(p[1],p[2],p[3],p[4],p[5],p[6])
 
-;Regex Format		;MapInfo_RegexFormat(TableName,InputColumn,OutputColumn,Needle,sFormat, StartingPositionColumn)
+;Regex Format		;MapInfo_RegexFormat(TableName,InputColumn,OutputColumn,Needle,Options,sFormat)
 } else if (p[0] ~= "i)(?:(regex)?\s*format|f)") {
-	MapInfo_RegexFormat(p[1],p[2],p[3],p[4],p[5])
+	MapInfo_RegexFormat(p[1],p[2],p[3],p[4],p[5],p[6])
 
 ;Return the count of the occurrencees of a given pattern in a string.
-;Regex Count		;MapInfo_RegexCount(TableName,InputColumn,OutputColumn,Needle)
+;Regex Count		;MapInfo_RegexCount(TableName,InputColumn,OutputColumn,Needle,Options)
 } else if (p[0] ~= "i)(?:(regex)?\s*(get\s*)?c(ou)?nt|c)") {
-	MapInfo_RegexCount(p[1],p[2],p[3],p[4])
+	MapInfo_RegexCount(p[1],p[2],p[3],p[4],p[5])
 
 ;Return Pos of found pattern. To find the position of the nth pattern use iPatternNumber = n / ColumnName
-;Regex Pos		;MapInfo_RegexPosition(TableName, InputColumn, OutputColumn, Needle, iPatternNumber=1)
+;Regex Pos		;MapInfo_RegexPosition(TableName, InputColumn, OutputColumn, Needle,Options,iPatternNumber=1)
 } else if (p[0] ~= "i)(?:(regex)?\s*(get\s*)?pos(ition)?|p)") {
-	MapInfo_RegexPosition(p[1],p[2],p[3],p[4],p[5])
+	MapInfo_RegexPos(p[1],p[2],p[3],p[4],p[5],p[6])
 
 ;Test data extraction
 } else if (p[0] ~= "i)(?:test|t)") {
-=======
-;Get params into array p
-p := []
-Loop, %0%
-{
-    var = %A_Index%
-    p.push(var)
-}
-
-;Extra functionality for scripters, pause MapBasic Window runtime.
-If (A_ScriptName ~= "MBWnd") {
-	;Get MapInfo Application
-	MI := MapInfo_GetApp()
-	MI.Do("Note ""Please wait while RegEx executes..."" ")
-}
-
-;Switch
-If (p[0] ~= "i)Regex\s*Match") {
-	;
-	;TableName	:= %2%
-	;InputColumn	:= %3%
-	;OutputColumn	:= %4%
-	;Needle		:= %5%
-	;MatchNum	:= %6%
-	;Count		:= %7%
-	MapInfo_RegexMatch(p[1],p[2],p[3],p[4],p[5],p[6])
-
-} else if (p[0] ~= "i)Test\s*Extract") {
->>>>>>> origin/master
 	MapInfo_Test()
 
 ;Help - Command Reference
 } else if (p[0] ~= "i)(?:help|h|\?)") {
-	Msgbox, Help! I need assistance!
+	Msgbox, Todo.
 
 } else {
 	Msgbox, % "Unknown command: " . StrJoin(p,",")
@@ -136,55 +138,70 @@ ExitApp
 ;*                           MAPINFO BASE FUNCTIONS                            *
 ;*******************************************************************************
 
-MapInfo_RegexMatch(TableName,InputColumn,OutputColumn,Needle,MatchNum,Count){
+MapInfo_RegexMatch(TableName,InputColumn,OutputColumn,Needle,Options,MatchNum,Count){
 	;Get input data
 	data := MapInfo_GetData(TableName,InputColumn)
 
-	;Regex Match
+	;Include options:
+	Needle := "O" . StrReplace(Options, "O") . ")" . Needle
+
+	;Regex Match   ;IMPORTANT: Array_RegexMatch expects object returning needle.
 	Array_RegexMatch(data, Needle, MatchNum, Count)
 
 	;Set output data
 	MapInfo_SetData(TableName, OutputColumn, data)
 }
 
-MapInfo_RegexReplace(TableName,InputColumn,OutputColumn,Needle,sReplace){
+MapInfo_RegexReplace(TableName,InputColumn,OutputColumn,Needle,Options,sReplace){
 	;Get input data
 	data := MapInfo_GetData(TableName,InputColumn)
 
-	;Regex Match
+	;Include options:
+	Needle := "O" . StrReplace(Options, "O") . ")" . Needle
+
+	;Regex Match   ;IMPORTANT: Array_RegexReplace expects object returning needle.
 	Array_RegexReplace(data, Needle, sReplace)
 
 	;Set output data
 	MapInfo_SetData(TableName, OutputColumn, data)
 }
 
-MapInfo_RegexFormat(TableName,InputColumn,OutputColumn,Needle,sFormat){
+MapInfo_RegexFormat(TableName,InputColumn,OutputColumn,Needle,Options,sFormat){
 	;Get input data
 	data := MapInfo_GetData(TableName,InputColumn)
 
-	;Regex Match
-	Array_RegexFormat(data, Needle, sFormat)
+	;Include options:
+	Needle := StrReplace(Options, "O") . ")" . Needle
+
+	;Regex Match   ;IMPORTANT: Array_RegexCount expects NON-object returning needle.
+	Array_RegexFormat(data, Needle, Options, sFormat)
 
 	;Set output data
 	MapInfo_SetData(TableName, OutputColumn, data)
 }
 
-MapInfo_RegexCount(TableName,InputColumn,OutputColumn,Needle){
+MapInfo_RegexCount(TableName,InputColumn,OutputColumn,Needle,Options){
 	;Get input data
 	data := MapInfo_GetData(TableName,InputColumn)
 
-	;Regex Match
+	;Include options:
+	Needle := "O" . StrReplace(Options, "O") . ")" . Needle
+
+	;Regex Match   ;IMPORTANT: Array_RegexCount expects object returning needle.
 	Array_RegexCount(data, Needle)
 
 	;Set output data
 	MapInfo_SetData(TableName, OutputColumn, data)
 }
 
-MapInfo_RegexPos(TableName,InputColumn,OutputColumn,Needle,iPatternNumber=1){
+MapInfo_RegexPos(TableName,InputColumn,OutputColumn,Needle, Options,iPatternNumber=1){
 	;Get input data
 	data := MapInfo_GetData(TableName,InputColumn)
 
-	;Regex Match
+	;Include options:
+	Needle := "O" . StrReplace(Options, "O") . ")" . Needle
+
+	;Regex Match   ;IMPORTANT: Array_RegexPos expects object returning needle.
 	Array_RegexPos(data, Needle, iPatternNumber)
 
 	;Set output data
@@ -215,8 +232,7 @@ MapInfo_Test(){
 ;*******************************************************************************
 
 Array_RegexMatch(byref data, Needle, MatchNum, Count){
-	;Add "O" to Needle
-	Needle := Regex_Objectify(Needle)
+	;IMPORTANT: Needle is expected to return object!!!
 
 	;Loop through all element in array
 	Loop, % data.Length()
@@ -248,8 +264,7 @@ Array_RegexMatch(byref data, Needle, MatchNum, Count){
 }
 
 Array_RegexReplace(byref data, Needle, sReplace){
-	;Add "O" to Needle
-	Needle := Regex_Objectify(Needle)
+	;IMPORTANT: Needle is expected to return object!!!
 
 	;Loop through all element in array
 	Loop, % data.Length()
@@ -259,6 +274,8 @@ Array_RegexReplace(byref data, Needle, sReplace){
 }
 
 Array_RegexFormat(byref data, Needle, sFormat){
+	;IMPORTANT Needle expected to be non-object
+
 	;Rearranges match/subpatterns into new format. E.G.
 	;data := ["abc123","def456","ghi789"]
 	;Array_RegexFormat(data,"\w\w\w(\d\d\d)","Suffix: \1")
@@ -268,31 +285,23 @@ Array_RegexFormat(byref data, Needle, sFormat){
 	;Array_RegexFormat(data,"(\w\w\w)(\d\d\d)","\2\1")
 	;--> data == ["123abc","456def","789ghi"]
 
+	;OBJECTIFY NOT NEEDED
 	;Add "O" to Needle
-	Needle := Regex_Objectify(Needle)
+	;Needle := Regex_Objectify(Needle)
 
 	;Loop through all element in array
 	Loop, % data.Length()
 	{
-		;Set ID for later use in next nested loop
-		ID := A_Index
-
 		;Get the match from the needle
-		i := RegexMatch(data[A_Index],Needle, oMatch,1)
+		i := RegexMatch(data[A_Index],Needle,Match,1)
 
 		;Replace full pattern and all other subpatterns.
-		Loop, % oMatch.Count() + 1
-		{
-			;Recall, Loop starts at 1
-			index := A_Index -1
-			StringReplace, data[ID], data[ID], "\" . index , oMatch.Value(index)
-		}
+		data[A_Index] = RegExReplace(Match,Needle, sFormat)
 	}
 }
 
 Array_RegexCount(byref data, Needle){
-	;Add "O" to Needle
-	Needle := Regex_Objectify(Needle)
+	;IMPORTANT: Needle is expected to return object!!!
 
 	;Loop through all element in array
 	Loop, % data.Length()
@@ -303,8 +312,7 @@ Array_RegexCount(byref data, Needle){
 }
 
 Array_RegexPos(byref data, Needle, iPatternNumber){
-	;Add "O" to Needle
-	Needle := Regex_Objectify(Needle)
+	;IMPORTANT: Needle is expected to return object!!!
 
 	;Loop through all element in array
 	Loop, % data.Length()
@@ -405,25 +413,12 @@ Regex_RetAllSubPatterns(oMatch){
 	return datapart
 }
 
-Regex_Objectify(Needle){
-	RegexMatch(Needle, "((?:i|m|s|x|A|D|J|U|X|P|S|C|O|`n|`r|`a)+?)\)", Match)
-	If Not (Match1 ~= ".*O.*") {
-		return, "O" . Needle
-	} else if (Match1 = "") {
-		return, "O)" . Needle
-	}
-}
-<<<<<<< HEAD
-
-
-;---------------------------
-;TestRegexEngine.ahk
-;---------------------------
-;Command not found: "RegexMatch". RegexMatch = ""
-;---------------------------
-;OK
-;---------------------------
-;Command:
-;Autohotkey.exe "C:\Users\jwa\Desktop\TestRegexEngine.ahk" "RegexMatch" "A" "A" "B" "i)\w+(\d*)" 1 1
-=======
->>>>>>> origin/master
+;DEPRECATED?
+;Regex_Objectify(Needle){
+;	RegexMatch(Needle, "((?:i|m|s|x|A|D|J|U|X|P|S|C|O|`n|`r|`a)+?)\)", Match)
+;	If Not (Match1 ~= ".*O.*") {
+;		return, "O" . Needle
+;	} else if (Match1 = "") {
+;		return, "O)" . Needle
+;	}
+;}
