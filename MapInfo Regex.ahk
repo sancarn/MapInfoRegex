@@ -44,7 +44,7 @@
 ;       To convert the case of a subpattern, follow the $ with one of the following characters: U or u (uppercase),
 ;       L or l (lowercase), T or t (title case, in which the first letter of each word is capitalized but all others are
 ;       made lowercase). For example, both $U1 and $U{1} transcribe an uppercase version of the first subpattern.
-
+;
 ;       Nonexistent backreferences and those that did not match anything in Haystack -- such as one of the
 ;       subpatterns in "(abc)|(xyz)" -- are transcribed as empty strings.
 ;
@@ -72,6 +72,23 @@
 ;
 ;  See table of: https://autohotkey.com/docs/misc/RegEx-QuickRef.htm#Options
 ;
+;MapBasic Window Scripting:
+;  If you are making a script in the MapBasic window you can call the Regex Engine with this:
+;    UNCOMPILED:
+;      run program """C:\Program Files\AutoHotkey\AutoHotkey.exe"" ""C:\Users\jwa\Desktop\MapInfoRegex-master\MI_RegexEngine.ahk"" ""Alias"" ""Params..."""
+;      note "Waiting for Regex response..."
+;      note "Regex Complete! Execute more code here!"
+;
+;    COMPILED:
+;      run program """<ENGINE-PATH>\MI_RegexEngine.exe"" ""Alias"" ""Params..."""
+;      note "Waiting for Regex response..."
+;      note "Regex Complete! Execute more code here!"
+;
+;  The code above will run the RegEx engine, freeze the MapBasic script while the regex engine is running, and unfreeze
+;   the running script again after the RegEx engine has completed it's task.
+;
+;  If you are writing code in MapBasic to be compiled to MBX, use ShellAndWait(). (See: http://stackoverflow.com/a/41250939/6302131 for an implementation of this.)
+;
 ;TODO:
 ;  Add default GUI.
 
@@ -91,13 +108,6 @@ if p.length() = 0 {
 	MsgBox, This is currently a command line tool only.
 	ExitApp
 }
-
-;		;Extra functionality for scripters, pause MapBasic Window runtime.
-;		If (A_ScriptName ~= "MBWnd") {
-;			;Get MapInfo Application
-;			MI := MapInfo_GetApp()
-;			MI.Do("Note ""Please wait while RegEx executes..."" ")
-;		}
 
 ;TODO:
 ;Params IDEA: TableName,InputColumn,OutputColumn, Needle, NeedleOptions , ....
@@ -136,10 +146,11 @@ If (p[1] ~= "i)(?:(regex)?\s*match|m)") {
 	Msgbox, % "Unknown command: " . StrJoin(p,",")
 }
 
-;		;Extra functionality for scripters, resume MapBasic Window runtime.
-;		If (A_ScriptName ~= "MBWnd") {
-;			WinClose, WinTitle, WinText
-;		}
+;Extra functionality for scripters, resume MapBasic Window runtime.
+;If (A_ScriptName ~= "MBWnd") {
+	WinClose, MapInfo ahk_class #32770 ahk_exe MapInfoPro.exe, Waiting for Regex response...
+;}
+
 ExitApp
 
 ;*******************************************************************************
@@ -227,7 +238,7 @@ MapInfo_Test(){
 	data := MapInfo_GetData(TableName,InputColumn)
 
 	MI.Do("Print chr$(12)")
-	MI.Do("Print ""Testing MapInfoRegex.ahk""")
+	MI.Do("Print ""Testing " . A_ScriptName . """")
 
 	Loop, % data.Length()
 	{
