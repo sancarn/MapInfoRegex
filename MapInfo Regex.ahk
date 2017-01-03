@@ -109,41 +109,48 @@ if p.length() = 0 {
 	ExitApp
 }
 
-;TODO:
-;Params IDEA: TableName,InputColumn,OutputColumn, Needle, NeedleOptions , ....
+TRY {
+	;***************
+	;* SWITCHBOARD *
+	;***************
+	
+	;Regex Match		;MapInfo_RegexMatch(TableName,InputColumn,OutputColumn,Needle,Options,MatchNum,Count)
+	If (p[1] ~= "i)(?:(regex)?\s*match|m)") {
+		MapInfo_RegexMatch(p[2],p[3],p[4],p[5],p[6],p[7],p[8])
 
-;Regex Match		;MapInfo_RegexMatch(TableName,InputColumn,OutputColumn,Needle,Options,MatchNum,Count)
-If (p[1] ~= "i)(?:(regex)?\s*match|m)") {
-	MapInfo_RegexMatch(p[2],p[3],p[4],p[5],p[6],p[7],p[8])
+	;Regex Replace	;MapInfo_RegexReplace(TableName,InputColumn,OutputColumn,Needle,Options,sReplace)
+	} else if (p[1] ~= "i)(?:(regex)?\s*replace|r)") {
+		MapInfo_RegexReplace(p[2],p[3],p[4],p[5],p[6],p[7])
 
-;Regex Replace	;MapInfo_RegexReplace(TableName,InputColumn,OutputColumn,Needle,Options,sReplace)
-} else if (p[1] ~= "i)(?:(regex)?\s*replace|r)") {
-	MapInfo_RegexReplace(p[2],p[3],p[4],p[5],p[6],p[7])
+	;Regex Format		;MapInfo_RegexFormat(TableName,InputColumn,OutputColumn,Needle,Options,sFormat)
+	} else if (p[1] ~= "i)(?:(regex)?\s*format|f)") {
+		MapInfo_RegexFormat(p[2],p[3],p[4],p[5],p[6],p[7])
 
-;Regex Format		;MapInfo_RegexFormat(TableName,InputColumn,OutputColumn,Needle,Options,sFormat)
-} else if (p[1] ~= "i)(?:(regex)?\s*format|f)") {
-	MapInfo_RegexFormat(p[2],p[3],p[4],p[5],p[6],p[7])
+	;Return the count of the occurrencees of a given pattern in a string.
+	;Regex Count		;MapInfo_RegexCount(TableName,InputColumn,OutputColumn,Needle,Options)
+	} else if (p[1] ~= "i)(?:(regex)?\s*(get\s*)?c(ou)?nt|c)") {
+		MapInfo_RegexCount(p[2],p[3],p[4],p[5],p[6])
 
-;Return the count of the occurrencees of a given pattern in a string.
-;Regex Count		;MapInfo_RegexCount(TableName,InputColumn,OutputColumn,Needle,Options)
-} else if (p[1] ~= "i)(?:(regex)?\s*(get\s*)?c(ou)?nt|c)") {
-	MapInfo_RegexCount(p[2],p[3],p[4],p[5],p[6])
+	;Return Pos of found pattern. To find the position of the nth pattern use iPatternNumber = n / ColumnName
+	;Regex Pos		;MapInfo_RegexPosition(TableName, InputColumn, OutputColumn, Needle,Options,iPatternNumber=1)
+	} else if (p[1] ~= "i)(?:(regex)?\s*(get\s*)?pos(ition)?|p)") {
+		MapInfo_RegexPos(p[2],p[3],p[4],p[5],p[6],p[6])
 
-;Return Pos of found pattern. To find the position of the nth pattern use iPatternNumber = n / ColumnName
-;Regex Pos		;MapInfo_RegexPosition(TableName, InputColumn, OutputColumn, Needle,Options,iPatternNumber=1)
-} else if (p[1] ~= "i)(?:(regex)?\s*(get\s*)?pos(ition)?|p)") {
-	MapInfo_RegexPos(p[2],p[3],p[4],p[5],p[6],p[6])
+	;Test data extraction
+	} else if (p[1] ~= "i)(?:test|t)") {
+		MapInfo_Test()
 
-;Test data extraction
-} else if (p[1] ~= "i)(?:test|t)") {
-	MapInfo_Test()
+	;Help - Command Reference
+	} else if (p[1] ~= "i)(?:help|h|\?)") {
+		Msgbox, Todo.
 
-;Help - Command Reference
-} else if (p[1] ~= "i)(?:help|h|\?)") {
-	Msgbox, Todo.
+	} else {
+		Msgbox, % "Unknown command: " . StrJoin(p,",")
+	}
 
-} else {
-	Msgbox, % "Unknown command: " . StrJoin(p,",")
+} CATCH e {
+	Msgbox,16, MI_RegexEngine.exe - Fatal Error, A fatal error occurred. RegexEngine will quit.
+	ExitApp
 }
 
 ;Extra functionality for scripters, resume MapBasic Window runtime.
@@ -194,7 +201,7 @@ MapInfo_RegexFormat(TableName,InputColumn,OutputColumn,Needle,Options,sFormat){
 
 	;Regex Match   ;IMPORTANT: Array_RegexCount expects NON-object returning needle.
 	Array_RegexFormat(data, Needle, sFormat)
-
+	
 	;Set output data
 	MapInfo_SetData(TableName, OutputColumn, data)
 }
@@ -316,7 +323,7 @@ Array_RegexFormat(byref data, Needle, sFormat){
 		i := RegexMatch(data[A_Index],Needle,Match,1)
 
 		;Replace full pattern and all other subpatterns.
-		data[A_Index] = RegExReplace(Match,Needle, sFormat)
+		data[A_Index] := RegExReplace(Match,Needle, sFormat)
 	}
 }
 
@@ -397,7 +404,7 @@ MapInfo_SetData(TableName, ColumnName, data){
 		;Loop through all rows and set values
 		Loop, %iNumRows%
 		{
-			thisData := data[A_Index -1]
+			thisData := data[A_Index]
 			MI.Do("Update " TableName " set " ColumnName " = """ thisData """ where rowid = " A_Index)
 		}
 	}
