@@ -7,15 +7,11 @@ Regular Expressions support for MapInfo!
 
 Support brought for the following functions:
 
-Regex Match     - Pattern found; Data to chosen column
-
-Regex Replace   - Pattern found; Patterns replaced; Data to chosen column
-
-Regex Format    - Pattern and subpatterns found; Reformated with \1 \2 \3 ...; Data to chosen column
-
-Regex Count		 - Pattern counted. Count returned to chosen column.
-
-Regex Position	 - Pattern found. Position returned to chosen column
+* Regex Match     - Pattern found; Data to chosen column
+* Regex Replace   - Pattern found; Patterns replaced; Data to chosen column
+* Regex Format    - Pattern and subpatterns found; Reformated with \1 \2 \3 ...; Data to chosen column
+* Regex Count		 - Pattern counted. Count returned to chosen column.
+* Regex Position	 - Pattern found. Position returned to chosen column
 
 ## SYNTAX OVERVIEW:
 ###  Regex Match:
@@ -78,11 +74,11 @@ Regex Position	 - Pattern found. Position returned to chosen column
       Alias: "Regex Position", "Position", "Pos", "P" (OTHERS: "(?:(regex)?\s*(get\s*)?pos(ition)?|p)")
       N: Default = 1
 
-##Regex Options:
+## Regex Options:
 
   See table of: https://autohotkey.com/docs/misc/RegEx-QuickRef.htm#Options
 
-##MapBasic Window Scripting:
+## MapBasic Window Scripting:
   If you are making a script in the MapBasic window you can call the Regex Engine with this:
     UNCOMPILED:
       run program """C:\Program Files\AutoHotkey\AutoHotkey.exe"" ""C:\Users\jwa\Desktop\MapInfoRegex-master\MI_RegexEngine.ahk"" ""Alias"" ""Params..."""
@@ -97,16 +93,16 @@ Regex Position	 - Pattern found. Position returned to chosen column
   The code above will run the RegEx engine, freeze the MapBasic script while the regex engine is running, and unfreeze
    the running script again after the RegEx engine has completed it's task.
 
-##MBX Scripting
+## MBX Scripting
   If you are writing code in MapBasic to be compiled to MBX, use ShellAndWait(). (See: http://stackoverflow.com/a/41250939/6302131 for an implementation of this.)
 
-##OUTPUT TO MESSAGE WINDOW:
+## OUTPUT TO MESSAGE WINDOW:
   If the output column name is $msg or $message then the change will be outputted to the message window. Useful for experimentation!
   BUG:
   If blank lines are found in the column currently there is a bug where these data entries are not printed to the message window.
   However when updating the MapInfo table everything will work as normal.
 
 
-TODO:
+## TODO:
   Add default GUI.
   Add a way to select HWND to perform regex on. Perhaps in tablename:: @{myHwnd}|MyTableName
