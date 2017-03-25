@@ -36,9 +36,9 @@ Note there is currently a bug with this functionality:
 If blank lines are found in the column currently there is a bug where these data entries are not printed to the message window. However when updating the MapInfo table everything will work as normal.
 
 # TODO:
-  Add default GUI.
-  Add a way to select HWND to perform regex on. Perhaps in tablename:: @{myHwnd}|MyTableName
-  Ability to use multiple input columns e.g.: `"Col1 & Col2 & Col3"`
+* Add default GUI.
+* Add a way to select HWND to perform regex on. Perhaps in tablename:: @{myHwnd}|MyTableName
+* Ability to use multiple input columns e.g.: `"Col1 & Col2 & Col3"`
 
 # SYNTAX OVERVIEW:
 
