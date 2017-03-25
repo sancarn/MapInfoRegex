@@ -1,0 +1,18 @@
+Uncompiled Command:
+	"C:\Program Files\AutoHotkey\AutoHotkey.exe" "C:\Users\jwa\Desktop\MapInfoRegex-master\MI_RegexEngine.ahk" "alias" "args"
+
+Example:
+	"C:\Program Files\AutoHotkey\AutoHotkey.exe" "C:\Users\jwa\Desktop\MapInfoRegex-master\MI_RegexEngine.ahk" "test"
+
+Compiled Command:
+	MI_RegexEngine.exe "alias" "params"
+
+Example:
+	MI_RegexEngine.exe "test"
+
+
+
+
+
+
+MapInfo ahk_class #32770 ahk_exe MapInfoPro.exe, Waiting for Regex response...
