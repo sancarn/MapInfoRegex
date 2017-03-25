@@ -4,12 +4,18 @@ A RegEx Engine for MapInfo
 
 ## FEATURES:
 Regular Expressions support for MapInfo!
+
 Support brought for the following functions:
-  Regex Match     - Pattern found; Data to chosen column
-  Regex Replace   - Pattern found; Patterns replaced; Data to chosen column
-  Regex Format    - Pattern and subpatterns found; Reformated with \1 \2 \3 ...; Data to chosen column
-  Regex Count		 - Pattern counted. Count returned to chosen column.
-  Regex Position	 - Pattern found. Position returned to chosen column
+
+Regex Match     - Pattern found; Data to chosen column
+
+Regex Replace   - Pattern found; Patterns replaced; Data to chosen column
+
+Regex Format    - Pattern and subpatterns found; Reformated with \1 \2 \3 ...; Data to chosen column
+
+Regex Count		 - Pattern counted. Count returned to chosen column.
+
+Regex Position	 - Pattern found. Position returned to chosen column
 
 ## SYNTAX OVERVIEW:
 ###  Regex Match:
