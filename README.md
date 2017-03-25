@@ -40,6 +40,7 @@ If blank lines are found in the column currently there is a bug where these data
 * Add a way to select HWND to perform regex on. Perhaps in tablename:: @{myHwnd}|MyTableName
 * Ability to use multiple input columns e.g.: `"Col1 & Col2 & Col3"`
 * Build a .mbo file which links to regex engine in a more direct/efficient way than with the command line.
+* Regex Select
 
 # SYNTAX OVERVIEW:
 
