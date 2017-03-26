@@ -9,24 +9,24 @@
 ;
 ;SYNTAX OVERVIEW:
 ;  Regex Match:
-;    CMD: MI_RegexEngine.exe "Alias" "TableName" "InputColumn" "OutputColumn" "Needle" "Options" "MatchNum" "Count"
+;    CMD: MI_RegexEngine.exe "Alias" "TableName" "InputColumn" "OutputColumn" "Needle" "Options" "MatchNum" "SubmatchNum"
 ;      Alias: "Regex Match", "RegexMatch", "Match", "M" - CASE INSENSITIVE
+;      SubmatchNum: 1, 2, 3, ... or *
 ;      MatchNum: 1, 2, 3, ... or *
-;      Count: 1, 2, 3, ... or *
 ;
 ;    Description:
 ;      Regex Match reads all data from the column <InputColumn> of table <TableName>,
 ;      uses RegEx to find the needle specified, and returns the found data to the
 ;      column <OutputColumn> of table <TableName>.
 ;
-;      If Count = 1 then the 1st match will be returned
-;      If Count = 2 then the 2nd match will be returned
-;      If Count = * then     all matches will be returned seperated by a |
+;      If MatchNum = 1 then the 1st match will be returned
+;      If MatchNum = 2 then the 2nd match will be returned
+;      If MatchNum = * then     all matches will be returned seperated by a |
 ;
-;      If MatchNum = 0 then the whole pattern is returned
-;      If MatchNum = 1 then the 1st captured subpatterns is returned
-;      If MatchNum = 2 then the 2nd captured subpatterns is returned
-;      If MatchNum = * then the whole pattern and all captured subpatterns
+;      If SubmatchNum = 0 then the whole pattern is returned
+;      If SubmatchNum = 1 then the 1st captured subpatterns is returned
+;      If SubmatchNum = 2 then the 2nd captured subpatterns is returned
+;      If SubmatchNum = * then the whole pattern and all captured subpatterns
 ;      are returned seperated by ";"
 ;
 ;  Regex Replace:
@@ -117,41 +117,59 @@ if p.length() = 0 {
 	;***************
 	;* SWITCHBOARD *
 	;***************
-	
 	;Regex Match		;MapInfo_RegexMatch(TableName,InputColumn,OutputColumn,Needle,Options,MatchNum,Count)
-	If (p[1] ~= "i)(?:(regex)?\s*match|m)") {
+	If (p[1] ~= "i)(?:(regex)?\s*match|^m$)") {
+		;msgbox, Match
 		MapInfo_RegexMatch(p[2],p[3],p[4],p[5],p[6],p[7],p[8])
-
+		GoTo, EndAutotExec
+	}
+	
 	;Regex Replace	;MapInfo_RegexReplace(TableName,InputColumn,OutputColumn,Needle,Options,sReplace)
-	} else if (p[1] ~= "i)(?:(regex)?\s*replace|r)") {
+	if (p[1] ~= "i)(?:(regex)?\s*replace|^r$)") {
+		;msgbox, Replace
 		MapInfo_RegexReplace(p[2],p[3],p[4],p[5],p[6],p[7])
-
+		GoTo, EndAutotExec
+	}
+	
 	;Regex Format		;MapInfo_RegexFormat(TableName,InputColumn,OutputColumn,Needle,Options,sFormat)
-	} else if (p[1] ~= "i)(?:(regex)?\s*format|f)") {
+	if (p[1] ~= "i)(?:(regex)?\s*format|^f$)") {
+		;msgbox, Format
 		MapInfo_RegexFormat(p[2],p[3],p[4],p[5],p[6],p[7])
-
+		GoTo, EndAutotExec
+	}
+	
 	;Return the count of the occurrencees of a given pattern in a string.
 	;Regex Count		;MapInfo_RegexCount(TableName,InputColumn,OutputColumn,Needle,Options)
-	} else if (p[1] ~= "i)(?:(regex)?\s*(get\s*)?c(ou)?nt|c)") {
+	if (p[1] ~= "i)(?:(regex)?\s*(get\s*)?c(ou)?nt|^c$)") {
+		;Msgbox, Count
 		MapInfo_RegexCount(p[2],p[3],p[4],p[5],p[6])
-
+		GoTo, EndAutotExec
+	}
+	
 	;Return Pos of found pattern. To find the position of the nth pattern use iPatternNumber = n / ColumnName
 	;Regex Pos		;MapInfo_RegexPosition(TableName, InputColumn, OutputColumn, Needle,Options,iPatternNumber=1)
-	} else if (p[1] ~= "i)(?:(regex)?\s*(get\s*)?pos(ition)?|p)") {
-		MapInfo_RegexPos(p[2],p[3],p[4],p[5],p[6],p[6])
-
-	;Test data extraction
-	} else if (p[1] ~= "i)(?:test|t)") {
-		MapInfo_Test()
-
-	;Help - Command Reference
-	} else if (p[1] ~= "i)(?:help|h|\?)") {
-		Msgbox, Todo.
-
-	} else {
-		Msgbox, % "Unknown command: " . StrJoin(p,",")
+	if (p[1] ~= "i)(?:(regex)?\s*(get\s*)?pos(ition)?|^p$)") {
+		;Msgbox, Position
+		MapInfo_RegexPos(p[2],p[3],p[4],p[5],p[6],p[7])
+		GoTo, EndAutotExec
 	}
-
+	
+	;Test data extraction
+	if (p[1] ~= "i)(?:test|^t$)") {
+		MapInfo_Test()
+		GoTo, EndAutotExec
+	}
+	
+	;Help - Command Reference
+	if (p[1] ~= "i)(?:help|^h$|^\?$)") {
+		Msgbox, Todo.
+		GoTo, EndAutotExec
+	}
+	
+	Msgbox, % "Unknown command: " . StrJoin(p,",")
+	
+	
+EndAutotExec:
 ;} CATCH e {
 ;	Extra := DEBUGMode=1 ? "`n`n" . e : "" 
 ;	Msgbox,16, MI_RegexEngine.exe - Fatal Error, A fatal error occurred. RegexEngine will quit.%Extra%
@@ -159,9 +177,7 @@ if p.length() = 0 {
 ;}
 
 ;Extra functionality for scripters, resume MapBasic Window runtime.
-;If (A_ScriptName ~= "MBWnd") {
-	WinClose, MapInfo ahk_class #32770 ahk_exe MapInfoPro.exe, Waiting for Regex response...
-;}
+WinClose, MapInfo ahk_class #32770 ahk_exe MapInfoPro.exe, Waiting for Regex response...
 
 ExitApp
 
@@ -169,16 +185,16 @@ ExitApp
 ;*                           MAPINFO BASE FUNCTIONS                            *
 ;*******************************************************************************
 
-MapInfo_RegexMatch(TableName,InputColumn,OutputColumn,Needle,Options,MatchNum,Count){
+MapInfo_RegexMatch(TableName,InputColumn,OutputColumn,Needle,Options,MatchNum,SubMatchNum){
 	;Get input data
 	data := MapInfo_GetData(TableName,InputColumn)
-
+	
 	;Include options:
 	Needle := "O" . StrReplace(Options, "O") . ")" . Needle
-
+	
 	;Regex Match   ;IMPORTANT: Array_RegexMatch expects object returning needle.
-	Array_RegexMatch(data, Needle, MatchNum, Count)
-
+	Array_RegexMatch(data, Needle, MatchNum, SubMatchNum)
+	
 	;Set output data
 	MapInfo_SetData(TableName, OutputColumn, data)
 }
@@ -203,7 +219,7 @@ MapInfo_RegexFormat(TableName,InputColumn,OutputColumn,Needle,Options,sFormat){
 
 	;Include options:
 	Needle := StrReplace(Options, "O") . ")" . Needle
-
+	
 	;Regex Match   ;IMPORTANT: Array_RegexCount expects NON-object returning needle.
 	Array_RegexFormat(data, Needle, sFormat)
 	
@@ -228,7 +244,7 @@ MapInfo_RegexCount(TableName,InputColumn,OutputColumn,Needle,Options){
 MapInfo_RegexPos(TableName,InputColumn,OutputColumn,Needle, Options,iPatternNumber=1){
 	;Get input data
 	data := MapInfo_GetData(TableName,InputColumn)
-
+	
 	;Include options:
 	Needle := "O" . StrReplace(Options, "O") . ")" . Needle
 
@@ -262,42 +278,53 @@ MapInfo_Test(){
 ;*                               ARRAY FUNCTIONS                               *
 ;*******************************************************************************
 
-Array_RegexMatch(byref data, Needle, MatchNum, Count){
+Array_RegexMatch(byref data, Needle, iMatchNum, iSubmatch){
 	;IMPORTANT: Needle is expected to return object!!!
-
+	
 	;Loop through all element in array
 	Loop, % data.Length()
 	{
+		dataline := A_Index
 		i := 1
-		While i <> 0 {
-			i := RegexMatch(data[A_Index],Needle, oMatch,i)
+		While i {
+			oMatch=0
+			i := RegexMatch(data[dataline],Needle, oMatch,i)
 			i := oMatch.Pos(0) + oMatch.Len(0)
-
-			If (A_Index = Count) {
-				;If MatchNum = "*" return all extracted subpatterns
-				If (MatchNum = "*"){
+			
+			if not i 
+				break
+			
+;			msgbox, % "Index: " dataline ", Data: " data[dataline] ", Needle: " Needle
+			
+			If (A_Index = iMatchNum) {		;If iMatchNum = int return match(int)
+				;If iSubmatch = "*" return all extracted subpatterns
+				If (iSubmatch = "*"){
 					datapart := Regex_RetAllSubPatterns(oMatch)
 				} else {
-					datapart := oMatch.Value(MatchNum)
+					datapart := oMatch.Value(iSubmatch)
 				}
 				
 				break ;GoTo, NextArrayElement
-			} else if (Count = "*") {
-				If (MatchNum = "*"){
-					datapart := datapart "|" Regex_RetAllSubPatterns(oMatch)
+			} else if (iMatchNum = "*") {	;If iMatchNum = "*" return all matches
+				If (iSubmatch = "*"){
+					datapart := datapart = "" ? Regex_RetAllSubPatterns(oMatch) : datapart "|" Regex_RetAllSubPatterns(oMatch)
+					;msgbox, % "Datapart: " datapart ", Subs: " Regex_RetAllSubPatterns(oMatch)
 				} else {
-					datapart := datapart "|" oMatch.Value(MatchNum)
+					datapart := datapart = "" ? oMatch.Value(iSubmatch) :  datapart "|" oMatch.Value(iSubmatch)
 				}
 			}
+;			msgbox, % "Match: " oMatch.value(0) ", iMatchNum: " oMatch.Count() ", Datapart: " datapart
 		}
 	;NextArrayElement:
-		data[A_Index] = datapart
+		data[A_Index] := datapart
+		;msgbox, % datapart
+		datapart =
 	}
 }
 
 Array_RegexReplace(byref data, Needle, sReplace){
 	;IMPORTANT: Needle is expected to return object!!!
-
+	
 	;Loop through all element in array
 	Loop, % data.Length()
 	{
@@ -320,15 +347,19 @@ Array_RegexFormat(byref data, Needle, sFormat){
 	;OBJECTIFY NOT NEEDED
 	;Add "O" to Needle
 	;Needle := Regex_Objectify(Needle)
-
+	
 	;Loop through all element in array
 	Loop, % data.Length()
 	{
+		;msgbox, % "Needle: " Needle "`nFormat: " sFormat "`nData: " data[A_Index]
+		
 		;Get the match from the needle
 		i := RegexMatch(data[A_Index],Needle,Match,1)
 
 		;Replace full pattern and all other subpatterns.
 		data[A_Index] := RegExReplace(Match,Needle, sFormat)
+		
+		;msgbox, % "Result: " data[A_Index]
 	}
 }
 
@@ -350,24 +381,25 @@ Array_RegexPos(byref data, Needle, iPatternNumber){
 	Loop, % data.Length()
 	{
 		i := 1
-		count := 1
+		iCount := 1
+		LoopIndex := A_Index
 		while i<>0 {
 			;find potential "Pos"
-			i := RegexMatch(data[A_Index],Needle, oMatch,i)
+			i := RegexMatch(data[LoopIndex],Needle, oMatch,i)
 
-			if (iPatternNumber = count){
-				data[A_Index] := i
-				
-				break ;GoTo NextArrayElement2  ;break?
+			if (iPatternNumber = iCount){
+				;before:=data[LoopIndex]
+				data[LoopIndex] := i
+				;msgbox , % "Before: " before "`nAfter: " data[LoopIndex]
+				break
 			}
-
+			
 			;Setup i for next pattern
 			i := oMatch.Pos(0) + oMatch.Len(0)
 
-			;Increment count
-			count := count + 1
+			;Increment iCount
+			iCount++
 		}
-;NextArrayElement2:
 	}
 }
 
@@ -495,13 +527,3 @@ MsgIndex(arr, index){
 _ := arr[index]
 msgbox, %index%:%_%
 }
-
-;DEPRECATED?
-;Regex_Objectify(Needle){
-;	RegexMatch(Needle, "((?:i|m|s|x|A|D|J|U|X|P|S|C|O|`n|`r|`a)+?)\)", Match)
-;	If Not (Match1 ~= ".*O.*") {
-;		return, "O" . Needle
-;	} else if (Match1 = "") {
-;		return, "O)" . Needle
-;	}
-;}
