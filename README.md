@@ -53,27 +53,26 @@ Regex Match reads all data from the column `InputColumn` of table `TableName`, u
 ### Code:
 
 ```
-MI_RegexEngine.exe "Alias" "TableName" "InputColumn" "OutputColumn" "Needle" "Options" "MatchNum" "Count"
+MI_RegexEngine.exe "Alias" "TableName" "InputColumn" "OutputColumn" "Needle" "Options" "iMatchNum" "iSubMatchNum"
 ```
 
 **Alias** can be anything that matches with the regex `i)(?:(regex)?\s*match|m)`. E.G. "Regex Match", "RegexMatch", "Match", "M"
-**MatchNum** can be any positive integer or `*` representing 'all matches'.
-**Count** can be any positive integer or `*` representing 'all matches'.
+**iMatchNum** can be any positive integer or `*` representing 'all matches'.
+**iSubMatchNum** can be any positive integer or `*` representing 'all matches'.
 
-If Count = 1 then the 1st match will be returned
+If iMatchNum = 1 then the 1st match will be returned
 
-If Count = 2 then the 2nd match will be returned
+If iMatchNum = 2 then the 2nd match will be returned
 
-If Count = * then all matches will be returned seperated by a |
+If iMatchNum = * then all matches will be returned seperated by a |
 
-If MatchNum = 0 then the whole pattern is returned
+If iSubMatchNum = 0 then the whole pattern is returned
 
-If MatchNum = 1 then the 1st captured subpatterns is returned
+If iSubMatchNum = 1 then the 1st captured subpatterns is returned
 
-If MatchNum = 2 then the 2nd captured subpatterns is returned
+If iSubMatchNum = 2 then the 2nd captured subpatterns is returned
 
-If MatchNum = * then the whole pattern and all captured subpatterns are returned seperated by ";"
-
+If iSubMatchNum = * then all captured subpatterns are returned seperated by ";"
 
 ##  Regex Replace:
 
